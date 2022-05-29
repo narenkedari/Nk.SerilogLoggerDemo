@@ -19,15 +19,25 @@ namespace Nk.SerilogLoggerDemo.API.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public IEnumerable<WeatherForecast> Get(Guid requestID)
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            try
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                _logger.LogInformation("Executing WeatherForecast Get method with {correlationId} =", requestID.ToString());
+                throw new Exception("Sample user created exception.", new Exception("Sample inner exception"));
+                return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+                {
+                    Date = DateTime.Now.AddDays(index),
+                    TemperatureC = Random.Shared.Next(-20, 55),
+                    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+                })
+               .ToArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error/exception in WeatherForecast Get method. Error {error}, {correlationId} =", ex.Message, requestID.ToString());
+                throw;
+            }
         }
     }
 }
